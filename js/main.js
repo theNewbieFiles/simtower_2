@@ -10,7 +10,7 @@ let delta = 0;
 //starting state
 let loading_State = new Loading_State();
 
-stateManager.addState(loading_State)
+stateManager.addState(loading_State);
 
 
 function update() {
