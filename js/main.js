@@ -28,4 +28,12 @@ function update() {
     requestAnimationFrame(update);
 }
 
-update();
+document.addEventListener("DOMContentLoaded", function(){
+    //console.log('ready');
+
+    //start the loop
+    update();
+});
+
+
+
