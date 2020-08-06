@@ -9,6 +9,22 @@ function StateManager() {
         states.pop();
     };
 
+    this.changeState = function (State) {
+        let currentState = states[states.length - 1];
+
+        if(currentState && typeof currentState.dispose === 'function'){
+            currentState.dispose();
+        }
+
+        if(typeof State.init === 'function'){
+            State.init();
+        }
+
+        states.push(State)
+
+
+    };
+
     this.update = function (Delta) {
         let currentState = states[states.length - 1];
 
@@ -40,3 +56,5 @@ function StateManager() {
 
 
 }
+
+export {StateManager};

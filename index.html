@@ -3,17 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <title>SimTower</title>
+    <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/stylesheet.css">
+
+
 </head>
 <body>
-<div id="downloading"></div>
+
+<div id="wrapper">
+    <canvas id="MainCanvas"></canvas>
+
+
+    <div id="welcome_page" class="page">
+        <div id="wp_title"></div>
+        <div id="wp_loading">Loading please wait...</div>
+    </div>
+
+
+</div>
+
+
 
 
 <script type="text/javascript" src="js/Settings.js"></script>
 <script type="text/javascript" src="js/Utilities.js"></script>
-<script type="text/javascript" src="js/stateManager.js"></script>
-<script type="text/javascript" src="js/loading_State.js"></script>
-<script type="text/javascript" src="js/main.js"></script>
+<script type="module" src="js/main.js"></script>
 
 
 </body>

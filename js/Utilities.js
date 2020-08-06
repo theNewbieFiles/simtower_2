@@ -29,7 +29,6 @@ function ScriptLoader(){
             script.type = "text/javascript";
 
             script.onload = ()=>{
-                console.log(listOfFiles)
                 totalDone += 1;
 
                 let index = listOfFiles.indexOf(Element);
@@ -72,3 +71,42 @@ function ScriptLoader(){
     }
 
 }
+
+
+/**
+ * https://stackoverflow.com/questions/6121203/how-to-do-fade-in-and-fade-out-with-javascript-and-css
+ * @param element
+ */
+function fade(element, Callback) {
+    var op = 1;  // initial opacity
+    var timer = setInterval(function () {
+        if (op <= 0.1){
+            clearInterval(timer);
+            element.style.display = 'none';
+            Callback()
+        }
+        element.style.opacity = op;
+        element.style.filter = 'alpha(opacity=' + op * 100 + ")";
+        op -= op * 0.1;
+    }, 50);
+}
+
+
+/**
+ * https://stackoverflow.com/questions/6121203/how-to-do-fade-in-and-fade-out-with-javascript-and-css
+ * @param element
+ */
+function unfade(element, Callback) {
+    var op = 0.1;  // initial opacity
+    element.style.display = 'block';
+    var timer = setInterval(function () {
+        if (op >= 1){
+            clearInterval(timer);
+            Callback();
+        }
+        element.style.opacity = op;
+        element.style.filter = 'alpha(opacity=' + op * 100 + ")";
+        op += op * 0.1;
+    }, 10);
+}
+
