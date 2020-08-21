@@ -9,3 +9,9 @@ Settings.title = "SimTower";
 Settings.screen = {};
 Settings.screen.width = 1200;
 Settings.screen.height = 800;
+
+
+Settings.keyMap = {};
+
+Settings.keyMap.pause = 'KeyP';
+Settings.keyMap.resume = 'KeyR';

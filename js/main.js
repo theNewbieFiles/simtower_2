@@ -1,5 +1,5 @@
-
-import {Game} from "./Game.js";
+import {Input} from "./Input";
+import {Game} from "./Game";
 
 
 
@@ -16,7 +16,8 @@ let _Game = new Game();
 
 
 document.addEventListener("DOMContentLoaded", function(){
-    //console.log('ready');
+
+
 
     //start the loop
     _Game.init();

@@ -1,21 +1,28 @@
-import * as THREE from "./threejs/three.module.js";
+import * as THREE from "./threejs/three.module";
+import {Input} from "./Input";
+import {ConsoleCommand} from "./ConsoleCommand";
 
 document.getElementById('wp_loading').innerText += "\n Game State loaded";
 
 
-function Game_State() {
-
+function Game_State(Game) {
+    let self = this;
     //variables
 
     //3d
     let renderer, camera, scene;
 
     //mouse
-    let rayCaster, mouse, canvasBounds;
+    let rayCaster, mouse, canvasBounds, leftClicked;
     let intersectedObj, oldIntersectedObj;
 
     //scene
-    let light, newGame, loadGame, settings, mainMenuGroup;
+    let light, ambient, newGame, loadGame, settings, mainMenuGroup;
+
+    //console command
+
+    let consoleCommand = new ConsoleCommand();
+    let commandSystem = new CommandSystem();
 
 
 
@@ -52,8 +59,10 @@ function Game_State() {
         light = new THREE.DirectionalLight(0xFFFFFF, .75);
         light.position.set(0, 0, 100);
         light.target.position.set(0, 0, 0);
-
         mainMenuGroup.add(light);
+
+        ambient = new THREE.AmbientLight(0xFFFFFF, .5);
+        mainMenuGroup.add(ambient);
 
         const geometry = new THREE.BoxGeometry( 1, 1, 1 );
         const newGameMat = new THREE.MeshPhongMaterial( {color: 0x00ff00, wireframe: false} );
@@ -65,11 +74,39 @@ function Game_State() {
 
         //button press
         newGame.userData.press = function () {
+            console.log("pressed")
+
 
         };
 
 
+        //setup keyboard listener
+        Input.addListener(this.onKeyPress);
 
+        //console command
+        consoleCommand.init({
+            div: document.getElementById('wrapper'),
+            closingCallback: function (Value) {
+                //Todo: change input so it can revert to previous object calling it
+                Input.addListener(self.onKeyPress);
+            },
+
+            commandSystem: commandSystem,
+        });
+
+
+    };
+
+    this.onKeyPress = function (Value) {
+
+        console.log(Value, Value.keys);
+
+       switch (Value.code) {
+           case 'Backquote':
+                consoleCommand.show();
+               Input.addListener(consoleCommand.input);
+
+       }
     };
 
     this.update = function () {
@@ -108,22 +145,19 @@ function Game_State() {
         }
 
 
+        if(leftClicked){
+
+        }
+
+
     };
 
     this.dispose = function(){
         //Todo: Clean up this code
     };
 
-    document.getElementById("MainCanvas").addEventListener('mouseup', click);
-
-    function click(event) {
-        event.preventDefault();
-
-
-
-        mouse.x = ( (event.clientX - canvasBounds.left) / renderer.domElement.clientWidth ) * 2 - 1;
-        mouse.y = - ( (event.clientY - canvasBounds.top) / renderer.domElement.clientHeight ) * 2 + 1;
-
+    this.click = function(Event) {
+        Event.preventDefault();
 
         rayCaster.setFromCamera( mouse, camera );
 
@@ -137,17 +171,13 @@ function Game_State() {
             }
 
         }
-    }
+    };
 
-    //get the mouse coords.
-    document.getElementById("MainCanvas").addEventListener('mousemove', mouseCoords);
+    this.mouseMove = function(Event) {
+        mouse.x = ( (Event.clientX - canvasBounds.left) / renderer.domElement.clientWidth ) * 2 - 1;
+        mouse.y = - ( (Event.clientY - canvasBounds.top) / renderer.domElement.clientHeight ) * 2 + 1;
 
-
-    function mouseCoords(event) {
-        mouse.x = ( (event.clientX - canvasBounds.left) / renderer.domElement.clientWidth ) * 2 - 1;
-        mouse.y = - ( (event.clientY - canvasBounds.top) / renderer.domElement.clientHeight ) * 2 + 1;
-
-    }
+    };
 
     function mouseOver() {
 
@@ -162,10 +192,35 @@ function Game_State() {
             intersectedObj = null;
         }
     }
+    
+
+
+
 
 
 
 
 }
+
+function CommandSystem(Systems) {
+    let systems = Systems || null;
+
+    this.command = function (Command) {
+        switch (Command[0]) {
+            case "system":
+                return "System here!";
+
+            case "exit":
+                return "bye!!!";
+
+
+            default:
+                return Command[0] + " is a unknown command!";
+
+        }
+    }
+}
+
+
 
 export {Game_State}

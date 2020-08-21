@@ -1,11 +1,12 @@
-import {Game_State} from "./game_State.js";
+import {Game_State} from "./game_State";
+import {MainMenuSettings_State} from "./mainMenuSettings_State";
 
-import * as THREE from './threejs/three.module.js';
-import * as GLTFLoader from "./threejs/GLTFLoader.js";
+import * as THREE from './threejs/three.module';
+import * as GLTFLoader from "./threejs/GLTFLoader";
 
 
 function MainMenu_State(Game) {
-
+    const self = this;
     //variables
 
     //3d
@@ -16,21 +17,24 @@ function MainMenu_State(Game) {
     let intersectedObj, oldIntersectedObj;
 
     //scene
-    let light, newGame, loadGame, settings, mainMenuGroup;
+    let light, ambient, newGame, loadGame, settings, mainMenuGroup;
 
 
     this.init = function(){
         //hide the welcome page
         document.getElementById("welcome_page").style.display = 'none';
 
+        //start to download models
+        Game.modelLoader.download(["./assets/Assets.glb"]);
+
         //3d
         renderer = new THREE.WebGLRenderer({canvas: document.getElementById("MainCanvas")});
         renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.setSize(Settings.screen.width, Settings.screen.height);
+        //renderer.setSize(Settings.screen.width, Settings.screen.height);
 
         camera = new THREE.PerspectiveCamera(
             75,                                             //view angle
-            Settings.screen.width / Settings.screen.height, //aspect
+            renderer.domElement.clientWidth / renderer.domElement.clientHeight, //aspect
             0.1,                                            //near
             50                                              //far
         );
@@ -51,8 +55,13 @@ function MainMenu_State(Game) {
         light = new THREE.DirectionalLight(0xFFFFFF, .75);
         light.position.set(0, 0, 100);
         light.target.position.set(0, 0, 0);
-
         mainMenuGroup.add(light);
+
+
+        ambient = new THREE.AmbientLight(0xFFFFFF, .5);
+        mainMenuGroup.add(ambient);
+
+
 
         const geometry = new THREE.BoxGeometry( 1, 1, 1 );
         const newGameMat = new THREE.MeshPhongMaterial( {color: 0x00ff00, wireframe: false} );
@@ -78,28 +87,31 @@ function MainMenu_State(Game) {
         mainMenuGroup.add(loadGame)
         loadGame.userData.press = function () {
             //Todo: code loadGame button
-            console.log('code me!!');
+            console.log('Load game');
         };
 
         //settings button
         settings = new THREE.Mesh(geometry, settingsMat);
-        settings.position.set(2, 0, -5);
+        settings.position.set(0, 2, -5);
         mainMenuGroup.add(settings);
         settings.userData.press = function () {
             //Todo: code settings button
-            console.log('code me!!');
+            Game.stateManager.addState(new MainMenuSettings_State(Game, self))
         }
 
 
     };
 
-    this.update = function () {
-        //Game.stateManager.addState(new Game_State(Game));
-        renderer.render(scene, camera);
+    this.update = function (Delta) {
 
 
-        newGame.rotation.x += .005;
-        newGame.rotation.y += .005;
+        if(Game.allModelsLoaded){
+            newGame.rotation.x += .005;
+            newGame.rotation.y += .005;
+
+
+            Game.stateManager.changeState(new Game_State(Game));
+        }
 
         mouseOver();
         if(intersectedObj){
@@ -131,24 +143,24 @@ function MainMenu_State(Game) {
 
     };
 
+    this.render = function (Delta) {
+        renderer.render(scene, camera);
+    };
+
     this.dispose = function(){
         //Todo: Clean up this code
+
+
     };
 
 
 
 
 
-    document.getElementById("MainCanvas").addEventListener('mouseup', click);
-
-    function click(event) {
-        event.preventDefault();
 
 
-
-        mouse.x = ( (event.clientX - canvasBounds.left) / renderer.domElement.clientWidth ) * 2 - 1;
-        mouse.y = - ( (event.clientY - canvasBounds.top) / renderer.domElement.clientHeight ) * 2 + 1;
-
+    this.click = function(Event) {
+        Event.preventDefault();
 
         rayCaster.setFromCamera( mouse, camera );
 
@@ -162,17 +174,13 @@ function MainMenu_State(Game) {
             }
 
         }
-    }
+    };
 
-    //get the mouse coords.
-    document.getElementById("MainCanvas").addEventListener('mousemove', mouseCoords);
+    this.mouseMove = function(Event) {
+        mouse.x = ( (Event.clientX - canvasBounds.left) / renderer.domElement.clientWidth ) * 2 - 1;
+        mouse.y = - ( (Event.clientY - canvasBounds.top) / renderer.domElement.clientHeight ) * 2 + 1;
 
-
-    function mouseCoords(event) {
-        mouse.x = ( (event.clientX - canvasBounds.left) / renderer.domElement.clientWidth ) * 2 - 1;
-        mouse.y = - ( (event.clientY - canvasBounds.top) / renderer.domElement.clientHeight ) * 2 + 1;
-
-    }
+    };
 
     function mouseOver() {
 
