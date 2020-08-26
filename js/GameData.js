@@ -1,18 +1,15 @@
 
 
 function GameData(LoadInfo) {
+    let source = LoadInfo || Settings.default;
     let gd = {};
 
-    if(LoadInfo){
 
-    }else{
-        let keys = Object.keys(Settings.default);
+    let keys = Object.keys(source);
 
-        keys.forEach(key => {
-            gd[key] = Settings.default[key];
-        });
-    }
-
+    keys.forEach(key => {
+        gd[key] = source[key];
+    });
 
 
 

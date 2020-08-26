@@ -5,6 +5,7 @@ import {Systems} from "./systems/Systems";
 import {Vector3} from "./threejs/three.module";
 import {HealthComponent, VisualComponent} from "./systems/Components";
 import {Entites} from "./systems/Entities";
+import {Game} from "./Game";
 
 document.getElementById('wp_loading').innerText += "\n Game State loaded";
 
@@ -51,7 +52,7 @@ function Game_State(Game, GameData, Logger) {
 
     this.init = function(){
         //first show the loading screen
-
+        console.log(GameData);
 
 
         //3d
@@ -109,16 +110,8 @@ function Game_State(Game, GameData, Logger) {
         });
 
 
-
-
-        //const geometry = Game.assets['legoGuy'].clone();  //new THREE.BoxGeometry( 10, 10, 10 );
-        //const newGameMat = new THREE.MeshPhongMaterial( {color: 0x00ff00, wireframe: false} );
-
-        //new game button
-        //newGame = new THREE.Mesh(geometry, newGameMat);
-
         newGame = Game.assets['legoGuy'].clone();
-        scene.add(newGame);
+        //scene.add(newGame);
 
         Systems.cameraSystem.createPosition('newGame', newGame.position.clone());
         Systems.cameraSystem.setPositionFrom('newGame');
@@ -127,13 +120,12 @@ function Game_State(Game, GameData, Logger) {
 
 
         let cube = entities.createEntity("cube");
-        let cube2 = entities.createEntity("cube2");
 
         let hp = HealthComponent();
 
 
-        visual.create(cube);
-        visual.get(cube).add(newGame);
+        visual.create(cube, Game.assets['legoGuy'].clone());
+        //visual.get(cube).add(newGame);
 
         mainMenuGroup.add(visual.get(cube));
 
@@ -146,7 +138,9 @@ function Game_State(Game, GameData, Logger) {
         }
         window.logger = function () {
             logger.output();
-        }
+        };
+
+        console.log(visual.get("cube"));
     };
 
     this.onKeyPress = function (Value) {
@@ -164,9 +158,9 @@ function Game_State(Game, GameData, Logger) {
         renderer.render(scene, camera);
 
 
-        visual.get("cube").rotation.x += .005;
+        /*visual.get("cube").rotation.x += .005;
         visual.get("cube").rotation.y += .005;
-        visual.get("cube").rotation.z += .05;
+        visual.get("cube").rotation.z += .05;*/
 
         //visual.get("cube").position.x += 0.01;
 
@@ -263,6 +257,10 @@ function Game_State(Game, GameData, Logger) {
         }else{
             intersectedObj = null;
         }
+    }
+
+    this.resize = function(Event) {
+        console.log('REsized')
     }
     
 

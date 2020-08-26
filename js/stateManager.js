@@ -88,6 +88,15 @@ function StateManager() {
 
     };
 
+    this.resize = function (Event) {
+        let currentState = states[states.length - 1];
+
+        if(typeof currentState.resize === 'function'){
+            currentState.resize(Event);
+        }
+
+    };
+
 
 }
 

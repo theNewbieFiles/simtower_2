@@ -1,6 +1,7 @@
 import {Input} from "./Input";
 import {Game} from "./Game";
 
+//prevent context menu from appearing
 document.addEventListener('contextmenu', Event => {
     Event.preventDefault();
     return false;

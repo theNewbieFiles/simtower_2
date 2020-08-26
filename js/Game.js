@@ -137,9 +137,11 @@ function Game() {
     };
 
 
-    this.resizeWindow = function () {
+    window.addEventListener('resize', Event => {
         //Todo: what happens when the window is resized
-    };
+
+        this.stateManager.resize(Event);
+    });
 
     this.setTotal = function (Total) {
         total = Total;

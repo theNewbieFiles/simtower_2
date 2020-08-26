@@ -157,9 +157,14 @@ function MainMenu_State(Game, Logger) {
     };
 
     this.update = function (Delta) {
-        //Todo: fix this
-        //assume new game was selected
-        let gameData = GameData(); //get a default copy of the game data
+        //Todo: finish main menu
+        //assume load game was selected
+        let gameData = GameData({
+            money: 1000,
+            day: null,
+            population: 153,
+            renters: 72
+        }); //get a default copy of the game data
 
 
 
