@@ -1,7 +1,9 @@
 import {GLTFLoader} from "./threejs/GLTFLoader";
 
 
-function ModelLoader(Game) {
+function ModelLoader(Game, Logger) {
+    const logger = Logger;
+    const game = Game;
     let loader = new GLTFLoader();
     let total;
 
@@ -13,20 +15,30 @@ function ModelLoader(Game) {
 
 
         ListOfModels.forEach(Asset => {
+
             loader.load(Asset,
                 //done loading
                 gltf => {
-                    console.log("done", gltf);
+                console.log(gltf, Asset)
+                    logger.log({
+                        location: 'ModelLoader',
+                        message: Asset + " is done loading"
+
+                    });
+
+                    Game.assets.push(gltf);
+
                     total -= 1;
 
                     if(total === 0){
                         Game.allModelsLoaded = true;
+                        //callback();
                     }
                 },
 
                 //progress
                 xhr => {
-                    console.log("loading", xhr);
+
                 },
 
                 //error
@@ -37,7 +49,29 @@ function ModelLoader(Game) {
 
             );
         });
-    }
+    };
+
+    this.add = function (Name, Path) {
+        total += 1;
+
+        loader.load(Path,
+            //finished loading
+            glft => {
+                logger.log({
+                    location: 'ModelLoader',
+                    message: Name + " is done loading"
+
+                });
+
+                game.assets[Name] = glft.scene.children[0]
+            }
+
+
+
+            , )
+    };
+
+
 
 
 

@@ -1,12 +1,20 @@
 import * as THREE from "./threejs/three.module";
 import {Input} from "./Input";
 import {ConsoleCommand} from "./ConsoleCommand";
+import {Systems} from "./systems/Systems";
+import {Vector3} from "./threejs/three.module";
+import {HealthComponent, VisualComponent} from "./systems/Components";
+import {Entites} from "./systems/Entities";
 
 document.getElementById('wp_loading').innerText += "\n Game State loaded";
 
 
-function Game_State(Game) {
+function Game_State(Game, GameData, Logger) {
     let self = this;
+    const logger = Logger;
+
+    logger.log('Game state');
+
     //variables
 
     //3d
@@ -20,16 +28,31 @@ function Game_State(Game) {
     let light, ambient, newGame, loadGame, settings, mainMenuGroup;
 
     //console command
+    let consoleCommand = new ConsoleCommand(logger);
 
-    let consoleCommand = new ConsoleCommand();
-    let commandSystem = new CommandSystem();
+    //system control
+    let systemControl;
+
+    //command system
+    let commandSystem = new CommandSystem(Systems, logger);
+
+    //ECS
+    //entites
+    let entities = new Entites();
+
+    //components
+    let visual = VisualComponent();
+
+
+
 
 
 
 
     this.init = function(){
-        //hide the welcome page
-        document.getElementById("welcome_page").style.display = 'none';
+        //first show the loading screen
+
+
 
         //3d
         renderer = new THREE.WebGLRenderer({canvas: document.getElementById("MainCanvas")});
@@ -37,13 +60,20 @@ function Game_State(Game) {
         renderer.setSize(Settings.screen.width, Settings.screen.height);
 
         camera = new THREE.PerspectiveCamera(
-            75,                                             //view angle
-            Settings.screen.width / Settings.screen.height, //aspect
-            0.1,                                            //near
-            50                                              //far
+            Settings.camera.viewAngle,
+            Settings.screen.width / Settings.screen.height,
+            Settings.camera.near,
+            Settings.camera.far
         );
 
+        Systems.cameraSystem.setCamera(camera);
+
+        Systems.cameraSystem.setPosition(-100, -1000, 100);
+        Systems.cameraSystem.lookAt(new Vector3());
+
         scene = new THREE.Scene(camera);
+
+        visual.setScene(scene);
 
         //mouse
         rayCaster = new THREE.Raycaster();
@@ -64,22 +94,6 @@ function Game_State(Game) {
         ambient = new THREE.AmbientLight(0xFFFFFF, .5);
         mainMenuGroup.add(ambient);
 
-        const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-        const newGameMat = new THREE.MeshPhongMaterial( {color: 0x00ff00, wireframe: false} );
-
-        //new game button
-        newGame = new THREE.Mesh(geometry, newGameMat);
-        newGame.position.set(0, 0, -5);
-        mainMenuGroup.add(newGame);
-
-        //button press
-        newGame.userData.press = function () {
-            console.log("pressed")
-
-
-        };
-
-
         //setup keyboard listener
         Input.addListener(this.onKeyPress);
 
@@ -95,11 +109,47 @@ function Game_State(Game) {
         });
 
 
+
+
+        //const geometry = Game.assets['legoGuy'].clone();  //new THREE.BoxGeometry( 10, 10, 10 );
+        //const newGameMat = new THREE.MeshPhongMaterial( {color: 0x00ff00, wireframe: false} );
+
+        //new game button
+        //newGame = new THREE.Mesh(geometry, newGameMat);
+
+        newGame = Game.assets['legoGuy'].clone();
+        scene.add(newGame);
+
+        Systems.cameraSystem.createPosition('newGame', newGame.position.clone());
+        Systems.cameraSystem.setPositionFrom('newGame');
+
+
+
+
+        let cube = entities.createEntity("cube");
+        let cube2 = entities.createEntity("cube2");
+
+        let hp = HealthComponent();
+
+
+        visual.create(cube);
+        visual.get(cube).add(newGame);
+
+        mainMenuGroup.add(visual.get(cube));
+
+        visual.get(cube).userData.press = function(val){
+            console.log(val)
+        };
+
+        window.printEntities = function () {
+            entities.print();
+        }
+        window.logger = function () {
+            logger.output();
+        }
     };
 
     this.onKeyPress = function (Value) {
-
-        console.log(Value, Value.keys);
 
        switch (Value.code) {
            case 'Backquote':
@@ -114,8 +164,11 @@ function Game_State(Game) {
         renderer.render(scene, camera);
 
 
-        newGame.rotation.x += .005;
-        newGame.rotation.y += .005;
+        visual.get("cube").rotation.x += .005;
+        visual.get("cube").rotation.y += .005;
+        visual.get("cube").rotation.z += .05;
+
+        //visual.get("cube").position.x += 0.01;
 
         mouseOver();
         if(intersectedObj){
@@ -149,6 +202,9 @@ function Game_State(Game) {
 
         }
 
+        //systems
+        Systems.cameraSystem.update();
+
 
     };
 
@@ -157,20 +213,36 @@ function Game_State(Game) {
     };
 
     this.click = function(Event) {
+        console.log(Event.which)
         Event.preventDefault();
+
 
         rayCaster.setFromCamera( mouse, camera );
 
 
-        let intersects = rayCaster.intersectObjects(mainMenuGroup.children);
+        let intersects = rayCaster.intersectObjects(mainMenuGroup.children, true);
 
         if ( intersects.length > 0 ) {
+            let parent = intersects[0].object.parent;
 
-            if(intersects[0].object.userData.press){
-                intersects[0].object.userData.press();
+
+            //have the click bubble up the chain to see if there are any clicks
+            while (parent !== null){
+                if(parent.userData.press){
+                    parent.userData.press(Event.which);
+                }
+
+                parent = parent.parent;
+                console.log('running')
+
+
             }
+            /*if(intersects[0].object.parent.userData.press){
+                intersects[0].object.parent.userData.press();
+            }*/
 
         }
+        return false;
     };
 
     this.mouseMove = function(Event) {
@@ -184,7 +256,7 @@ function Game_State(Game) {
 
         rayCaster.setFromCamera( mouse, camera );
 
-        let intersects = rayCaster.intersectObjects(mainMenuGroup.children);
+        let intersects = rayCaster.intersectObjects(mainMenuGroup.children, true);
 
         if ( intersects.length > 0 ) {
             intersectedObj = intersects[0];
@@ -202,10 +274,15 @@ function Game_State(Game) {
 
 }
 
-function CommandSystem(Systems) {
+function CommandSystem(Systems, Logger) {
     let systems = Systems || null;
+    const logger = Logger;
+
+
 
     this.command = function (Command) {
+
+
         switch (Command[0]) {
             case "system":
                 return "System here!";
@@ -213,8 +290,25 @@ function CommandSystem(Systems) {
             case "exit":
                 return "bye!!!";
 
+                //camera
+            case "mcamera":
+            case "mc":
+                Systems.cameraSystem.setPosition(Command[1], Command[2], Command[3]);
+                console.log(Systems.cameraSystem.getCurrentPosition());
+                return "camera moved to " + Command[1] + " " + Command[2] + " " + Command[3];
+
+            case "lookat":
+                Systems.cameraSystem.lookAt(Command[1]);
+                return "looking at " + Command[1];
+
 
             default:
+                logger.log({
+                    location: "CommandSystem",
+                    level: "error",
+                    message: Command[0] + " is a unknown command!",
+                    info: Command,
+                });
                 return Command[0] + " is a unknown command!";
 
         }

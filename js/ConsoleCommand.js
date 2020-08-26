@@ -2,8 +2,9 @@
  *
  * @constructor
  */
-function ConsoleCommand() {
+function ConsoleCommand(Logger) {
     let self = this;
+    const logger = Logger;
 
     let parent; //parent div to attach to
 
@@ -109,6 +110,7 @@ function ConsoleCommand() {
     }
 
     function inputHandler() {
+
         listOfCommands.push(inputText.value);
         commandPosition = listOfCommands.length;
 
@@ -116,7 +118,10 @@ function ConsoleCommand() {
         //convert text to lowercase
         let text = inputText.value.toLowerCase();
 
-
+        logger.log({
+            location: 'inputHandler',
+            message: "command: " + text,
+        });
 
         //parse the text
         let command = text.split(" ");
@@ -125,6 +130,7 @@ function ConsoleCommand() {
         //check internal commands first
         switch(command[0]){
             case "supercls":
+            case "scls":
                 listOfCommands = [];
                 commandPosition = 0;
                 output.value = "";
@@ -132,14 +138,36 @@ function ConsoleCommand() {
                 break;
 
             case "cls":
+            case "clear":
                 //clear the output screen
                 output.value = "";
-
                 break;
 
             case "hide":
             case "close":
                 close();
+                break;
+
+            case 'log':
+                output.value += "\n\nLogs: \n";
+                let data = logger.getLogData();
+                data.forEach(val => {
+                    output.value += "----------------------------------------------\n";
+
+                    let keys = Object.keys(val);
+
+
+                    keys.forEach(key => {
+                        output.value += key + ": " + val[key] + "\n";
+                    });
+
+                });
+
+                break;
+
+            case 'logoutput':
+            case 'll':
+                logger.output();
                 break;
 
             default:

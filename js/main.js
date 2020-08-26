@@ -1,6 +1,13 @@
 import {Input} from "./Input";
 import {Game} from "./Game";
 
+document.addEventListener('contextmenu', Event => {
+    Event.preventDefault();
+    return false;
+});
+
+
+
 
 
 

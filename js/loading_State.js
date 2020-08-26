@@ -1,71 +1,63 @@
 import {GLTFLoader} from "./threejs/GLTFLoader";
+import {Game_State} from "./game_State";
 
-function Loading_State() {
+function Loading_State(Game, GameData, Logger) {
+    let self = this;
 
-    let updatedNum = 0;
-    let done = false;
-    let status;
 
-    let welcomePage = document.getElementById('welcome_page');
-    welcomePage.style.width = Settings.screen.width + "px";
-    welcomePage.style.height = Settings.screen.height + "px";
-    let opacity = 1;
+    Logger.log('Loading State');
 
-    let loadingBar = document.getElementById('wp_loadingBar');
+    let count = 0;
+    let txt = "Loading";
+    let dots = "";
 
-    //title
-    let title = document.getElementById('wp_title');
-    title.innerText = Settings.title;
+    let canvas = document.createElement("canvas");
+    document.getElementById('wrapper').appendChild(canvas);
+    canvas.width = Settings.screen.width;
+    canvas.height = Settings.screen.height;
 
-    let scriptLoader = new ScriptLoader();
+    let ctx = canvas.getContext('2d');
 
-    let List_of_scripts = ["js/Game.js", "js/mainMenu_State", "js/game_State.js", "js/threejs/GLTFLoader.js", "js/threejs/three.js"];
+    //loading files
+    let total = 0;
 
-    scriptLoader.download(List_of_scripts, () => {
-        loadingBar.innerText = "100%";
-        //console.log("Done");
+    this.init = function(){
 
-        done = true;
 
-        let loader = new GLTFLoader();
 
-    });
+
+    };
 
     this.update = function (Delta) {
-        if(!done){
-            status = scriptLoader.status();
-            console.log(status);
-            loadingBar.innerText = ((status.totalDone / status.total) * 100) + "%";
+        if(Game.allModelsLoaded){
+            txt = "Done";
 
-        }else{
-            //all the files are done loading
-
-            //fade welcome page
-            if(opacity <= 0.1){
-                //welcome page is faded
-                welcomePage.style.display = 'none';
-
-
-                stateManager.addState(new MainMenu_State(new Game));
-
-
-
-
-            }
-
-            welcomePage.style.opacity = opacity;
-            welcomePage.style.filter = 'alpha(opacity=' + opacity * 100 + ")";
-            opacity -= opacity * 0.05;
-
-
-
-
+            Game.stateManager.changeState(new Game_State(Game, GameData, Logger))
         }
     };
 
     this.render = function (Delta) {
-        //console.log('render');
+        ctx.fillStyle = "#50b2ff";
+
+        ctx.fillRect(0, 0, Settings.screen.width, Settings.screen.height);
+
+        ctx.fillStyle = "#000000";
+        ctx.font = "35px Georgia";
+
+        count += 1;
+        if (count > 45){count = 0;}
+
+        dots = "";
+
+        for(let i = 0; i < count; i += 1){
+            dots += ".";
+        }
+        ctx.fillText(txt + dots, 300, 300);
     };
+
+    this.dispose = function () {
+        canvas.parentNode.removeChild(canvas);
+    }
 
 }
 
@@ -77,3 +69,4 @@ function Loading_State() {
 
 
 
+export {Loading_State}

@@ -15,3 +15,15 @@ Settings.keyMap = {};
 
 Settings.keyMap.pause = 'KeyP';
 Settings.keyMap.resume = 'KeyR';
+
+//game settings
+Settings.camera = {};
+Settings.camera.viewAngle = 75;
+Settings.camera.near = 0.1;
+Settings.camera.far = 500;
+
+//game playing
+Settings.default = {};
+Settings.default.money = 10000000;
+Settings.default.day = null;
+Settings.default.population = 0;

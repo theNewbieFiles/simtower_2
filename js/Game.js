@@ -5,9 +5,10 @@ import {ModelLoader} from "./modelLoader";
 import {StateManager} from "./stateManager";
 import {MainMenu_State} from "./mainMenu_State";
 
+import {Logger} from "./Logger";
 
 
-document.getElementById("wp_loading").innerText += "\n Game Loaded";
+
 
 
 
@@ -27,6 +28,12 @@ function Game() {
 
     //models
     this.allModelsLoaded = false;
+    let total = 0;
+    this.assets = {};
+
+    let logger = new Logger();
+
+
 
 
 
@@ -34,6 +41,8 @@ function Game() {
     this.stateManager = new StateManager();
 
     this.init = function() {
+        document.getElementById("wp_loading").innerText += "\n Game Loaded";
+        logger.log('Game.init');
         //set sizes
         self.setCanvasSize(Settings.screen.width, Settings.screen.height);
 
@@ -41,7 +50,7 @@ function Game() {
         pauseCanvas.style.display = "none";
 
         //model loader
-        this.modelLoader = new ModelLoader(self);
+        this.modelLoader = new ModelLoader(self, logger);
 
 
         //inputs
@@ -53,28 +62,29 @@ function Game() {
             self.stateManager.mouseMove(Event)
         }, false);
 
-        document.getElementById("MainCanvas").addEventListener('click', Event => {
+        document.getElementById("MainCanvas").addEventListener('mousedown', Event => {
+
             self.stateManager.click(Event)
         }, false);
 
 
 
 
-        self.stateManager.changeState(new MainMenu_State(this));
+        self.stateManager.changeState(new MainMenu_State(this, logger));
 
         update();
     };
 
 
     function update() {
-        if(Input.isDown(Settings.keyMap.pause) && Input._shiftLeft && !hardPause){
+        if(Input.isDown(Settings.keyMap.pause) && Input._altRight && !hardPause){
             //hard stop of the app
             hardPause = true;
             pauseCanvas.style.display = "block";
             console.log("Paused");
         }
 
-        if(Input.isDown(Settings.keyMap.resume) && Input._shiftLeft && hardPause){
+        if(Input.isDown(Settings.keyMap.resume) && Input._altRight && hardPause){
             //resume app
             hardPause = false;
             pauseCanvas.style.display = "none";
@@ -82,7 +92,7 @@ function Game() {
             console.log("Resumed");
         }
 
-        if(Input.isDown('KeyD') && Input.isDown('KeyE')){
+        if(Input.isDown('KeyD') && Input._altRight){
             debugger
         }
 
@@ -130,6 +140,22 @@ function Game() {
     this.resizeWindow = function () {
         //Todo: what happens when the window is resized
     };
+
+    this.setTotal = function (Total) {
+        total = Total;
+    };
+
+    this.checkDownload = function (Passed) {
+        if(!Passed){
+            //attempt redownload the file...
+            //create a red square or something
+        }
+        total -= 1;
+
+        if(total === 0){
+            this.allModelsLoaded = true;
+        }
+    }
 
 
 

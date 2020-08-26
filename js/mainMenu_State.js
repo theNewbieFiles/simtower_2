@@ -2,11 +2,14 @@ import {Game_State} from "./game_State";
 import {MainMenuSettings_State} from "./mainMenuSettings_State";
 
 import * as THREE from './threejs/three.module';
-import * as GLTFLoader from "./threejs/GLTFLoader";
+import {GLTFLoader} from "./threejs/GLTFLoader";
+import {Loading_State} from "./loading_State";
+import {GameData} from "./GameData";
 
 
-function MainMenu_State(Game) {
+function MainMenu_State(Game, Logger) {
     const self = this;
+    const logger = Logger;
     //variables
 
     //3d
@@ -19,13 +22,64 @@ function MainMenu_State(Game) {
     //scene
     let light, ambient, newGame, loadGame, settings, mainMenuGroup;
 
+    let loader = new GLTFLoader();
+
+    //gameData
+    let gameData = {};
 
     this.init = function(){
         //hide the welcome page
         document.getElementById("welcome_page").style.display = 'none';
 
+        //Todo: in the end I should only be loading one file.
+        //Todo: since there will only be one file tie the progress to the loading state
         //start to download models
-        Game.modelLoader.download(["./assets/Assets.glb"]);
+        //set total files
+        Game.setTotal(3);
+
+        loader.load("./assets/School Desk.glb",
+            //file finished loading
+            file => {
+                Game.assets['schoolDesk'] = file.scene.children[0];
+
+                Game.checkDownload(true);
+
+            },
+            //in progress
+            progress,
+            //error
+            errorLoading
+        );
+
+        //temp loading of a file
+        loader.load("./assets/chest.glb",
+            //file finished loading
+            file => {
+                Game.assets['chest'] = file.scene.children[0];
+
+                Game.checkDownload(true);
+
+            },
+            //in progress
+            progress,
+            //error
+            errorLoading
+        );
+
+        //temp loading of file
+        loader.load("./assets/legoGuy.glb",
+            //file finished loading
+            file => {
+                Game.assets['legoGuy'] = file.scene.children[0];
+
+                Game.checkDownload(true);
+
+            },
+            //in progress
+            progress,
+            //error
+            errorLoading
+        );
 
         //3d
         renderer = new THREE.WebGLRenderer({canvas: document.getElementById("MainCanvas")});
@@ -77,7 +131,7 @@ function MainMenu_State(Game) {
         newGame.userData.press = function () {
             //cleanup
 
-            Game.stateManager.changeState(new Game_State(Game));
+            //Game.stateManager.changeState(new Game_State(Game));
         };
 
 
@@ -103,14 +157,21 @@ function MainMenu_State(Game) {
     };
 
     this.update = function (Delta) {
+        //Todo: fix this
+        //assume new game was selected
+        let gameData = GameData(); //get a default copy of the game data
 
+
+
+
+        Game.stateManager.changeState(new Loading_State(Game, gameData, logger));
 
         if(Game.allModelsLoaded){
             newGame.rotation.x += .005;
             newGame.rotation.y += .005;
 
 
-            Game.stateManager.changeState(new Game_State(Game));
+
         }
 
         mouseOver();
@@ -197,6 +258,25 @@ function MainMenu_State(Game) {
     }
 
 
+
+    //downloading model functions
+    function progress(xhr) {
+        logger.log({
+            location: 'ModelLoader',
+            message: Math.round((xhr.loaded/xhr.total)*100) + '% Loaded',
+            info: xhr,
+        });
+    }
+
+    function errorLoading(error) {
+        console.log(error);
+
+        logger.log({
+            location: 'loader Error',
+            message: error,
+        });
+        Game.checkDownload(false);
+    }
 
 
 
