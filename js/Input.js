@@ -53,7 +53,7 @@ let Input = {
             this._keyList.shift();
         }
 
-        if(this._currentListener){
+        /*if(this._currentListener){
             this._currentListener({
                 code: event.code,
                 keys: this._pressed,
@@ -61,13 +61,14 @@ let Input = {
                 shiftLeft: this._shiftLeft,
                 keyList: this._keyList
             });
-        }
+        }*/
 
 
     },
 
     onKeyUp: function(event){
-        delete this._pressed[event.code];
+        //delete this._pressed[event.code];
+        this._pressed[event.code] = false;
         this._anyKeyPressed = false;
 
         if(event.code === "ControlLeft"){
@@ -92,6 +93,8 @@ let Input = {
         this._anyKeyPressed = false;
         this._ctrl = false;
     }
+
+
 
 
 };

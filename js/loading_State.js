@@ -55,6 +55,10 @@ function Loading_State(Game, GameData, Logger) {
         ctx.fillText(txt + dots, 300, 300);
     };
 
+    this.exit = function () {
+
+    };
+
     this.dispose = function () {
         canvas.parentNode.removeChild(canvas);
     }

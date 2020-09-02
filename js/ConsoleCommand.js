@@ -1,3 +1,5 @@
+import {Input} from "./Input";
+
 /**
  *
  * @constructor
@@ -37,7 +39,6 @@ function ConsoleCommand(Logger) {
      */
     this.init = function (Options) {
         parent = Options.div || document.body;
-        closingCallback = Options.closingCallback || null;
 
         commandSystem = Options.commandSystem || console.log;
 
@@ -49,54 +50,49 @@ function ConsoleCommand(Logger) {
         self.hide();
     };
 
-    this.show = function () {
+    this.show = function (Callback) {
         wrapper.style.display = 'block';
+        closingCallback = Callback;
     };
 
     this.hide = function () {
         wrapper.style.display = 'none';
     };
 
-    this.input = function(Input) {
+    this.input = function() {
         inputText.focus(); //fixes input issue where key is still held down as console comes up
 
-        switch (Input.code) {
-            case "Enter":
-            case "NumpadEnter":
-                inputHandler();
 
-                break;
-
-            case "Backquote":
-                close();
-                break;
-
-            case "ArrowUp":
-                commandPosition -= 1;
-                if(commandPosition < 0) commandPosition = 0;
-                if(listOfCommands.length !== 0){
-                    inputText.value = listOfCommands[commandPosition];
-                }
-
-                break;
-
-            case "ArrowDown":
-                commandPosition += 1;
-
-                if(commandPosition >= listOfCommands.length){
-                    commandPosition = listOfCommands.length;
-                    inputText.value = "";
-
-                }else{
-                    inputText.value = listOfCommands[commandPosition];
-                }
-
-                break;
-
-
-            default:
-            //do nothing
+        if(Input.isDown("Enter") || Input.isDown("NumpadEnter")){
+            inputHandler();
         }
+
+        if(Input.isDown("Backquote")) {
+            close();
+        }
+
+        if(Input.isDown("ArrowUp")) {
+            commandPosition -= 1;
+            if(commandPosition < 0) commandPosition = 0;
+            if(listOfCommands.length !== 0){
+                inputText.value = listOfCommands[commandPosition];
+            }
+        }
+
+        if(Input.isDown("ArrowDown")) {
+            commandPosition += 1;
+
+            if(commandPosition >= listOfCommands.length){
+                commandPosition = listOfCommands.length;
+                inputText.value = "";
+
+            }else{
+                inputText.value = listOfCommands[commandPosition];
+            }
+        }
+
+        Input.clearKeys();
+
 
         //console.log("from the command: ", Input);
     };

@@ -8,23 +8,10 @@ document.addEventListener('contextmenu', Event => {
 });
 
 
-
-
-
-
-
 let _Game = new Game();
 
 
-
-
-
-
-
-
-
 document.addEventListener("DOMContentLoaded", function(){
-
 
 
     //start the loop

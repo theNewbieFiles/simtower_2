@@ -20,7 +20,7 @@ Settings.keyMap.resume = 'KeyR';
 Settings.camera = {};
 Settings.camera.viewAngle = 75;
 Settings.camera.near = 0.1;
-Settings.camera.far = 500;
+Settings.camera.far = 5000000;
 
 //game playing
 Settings.default = {};

@@ -22,6 +22,10 @@ function StateManager() {
     this.changeState = function (State) {
         let currentState = states[states.length - 1];
 
+        if(currentState && typeof currentState.exit === 'function'){
+            currentState.exit();
+        }
+
         if(currentState && typeof currentState.dispose === 'function'){
             currentState.dispose();
         }

@@ -54,8 +54,8 @@ function Game() {
 
 
         //inputs
-        document.addEventListener( 'keydown', function(event){Input.onKeyDown(event)}, false );
-        document.addEventListener( 'keyup', function(event){Input.onKeyUp(event)}, false );
+        document.addEventListener( 'keydown', function(Event){Input.onKeyDown(Event)}, false );
+        document.addEventListener( 'keyup', function(Event){ Input.onKeyUp(Event)}, false );
 
         //mouse
         document.addEventListener('mousemove', Event => {
