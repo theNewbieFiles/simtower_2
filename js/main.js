@@ -16,6 +16,9 @@ document.addEventListener("DOMContentLoaded", function(){
 
     //start the loop
     _Game.init();
+
+    //testing
+
 });
 
 

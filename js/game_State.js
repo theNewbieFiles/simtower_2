@@ -8,6 +8,8 @@ import {Entites} from "./systems/Entities";
 import {Game} from "./Game";
 import {Building} from "./Building";
 import {AxesHelper} from "./threejs/three.module";
+import {OrthographicCamera} from "./threejs/three.module";
+import {Voxels} from "./Voxels";
 
 document.getElementById('wp_loading').innerText += "\n Game State loaded";
 
@@ -49,8 +51,13 @@ function Game_State(Game, GameData, Logger) {
     let focus = null;
 
     let building;
+    let voxels = Voxels();
 
     let tempCamX = 50;
+    let cameraLoc = 0;
+
+    let frustumSize = 3000;
+    let aspect = Settings.screen.width / Settings.screen.height;
 
 
 
@@ -74,6 +81,15 @@ function Game_State(Game, GameData, Logger) {
             Settings.camera.near,
             Settings.camera.far
         );
+
+        /*camera = new OrthographicCamera(
+            0.5 * frustumSize * aspect / - 2,
+            0.5 * frustumSize * aspect / 2,
+            frustumSize / 2,
+            frustumSize / - 2,
+            0.1,
+            100000,
+        );*/
 
         //Systems.cameraSystem.setCamera(camera);
 
@@ -155,17 +171,26 @@ function Game_State(Game, GameData, Logger) {
 
 
 
-        for(let x = 0; x < 400; x += 1){
-            for(let y = 0; y < 28; y += 1){
-                for(let z = 0; z < 400; z += 1){
-                    building.setVoxel(x, y, z, "n");
+
+        let testNumber = 0;
+
+        for(let x = 0; x < 3; x += 1){
+            for(let y = 0; y < 4; y += 1){
+                for(let z = 0; z < 5; z += 1){
+
+                    if(y === 0 || y === 1){
+                        building.setVoxel(x, y, z, 'n')
+                    }
+
                 }
             }
         }
 
-        let testFloor = building.getFloor(0);
+        console.log(building.countVoxels());
 
-        console.log(testFloor);
+        let testFloor = building.getFloor(1);
+
+
 
         //building.print();
         let floorZero = entities.createEntity("floorZero");
@@ -174,13 +199,14 @@ function Game_State(Game, GameData, Logger) {
 
         building.generateFloorMesh(0, visual.get("floorZero"));
 
+        cameraLoc = 200;
 
         //camera.position.set(0, 50, 0);
         //camera.position.set(50, 50, 50);
         //camera.position.set(25, 5, 25);
-        camera.position.set(1000, 1000, 1000);
+        camera.position.set(cameraLoc, cameraLoc*1.5, cameraLoc);
         camera.lookAt(new Vector3(0, 0, 0));
-        //camera.position.set()
+        //camera.position.set(500, 800, 500);
         //camera.lookAt(visual.get(floorZero).position.clone())
 
 
@@ -191,7 +217,7 @@ function Game_State(Game, GameData, Logger) {
 
 
 
-        console.log(renderer.info);
+        console.log(renderer.info.render);
 
     }; //end of init
 
@@ -220,9 +246,13 @@ function Game_State(Game, GameData, Logger) {
             keypress()
         }
 
-        /*tempCamX += .01;
+        tempCamX += .51;
 
-        camera.position.set(0, tempCamX, 0);*/
+        if(tempCamX > 500){
+            tempCamX = 0;
+        }
+        //visual.get("floorZero").position.set(tempCamX, 0, 0)
+
 
 
         /*visual.get("cube").rotation.x += .005;

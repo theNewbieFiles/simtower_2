@@ -18,7 +18,7 @@ Settings.keyMap.resume = 'KeyR';
 
 //game settings
 Settings.camera = {};
-Settings.camera.viewAngle = 75;
+Settings.camera.viewAngle = 45;
 Settings.camera.near = 0.1;
 Settings.camera.far = 5000000;
 
