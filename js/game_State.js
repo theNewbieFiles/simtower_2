@@ -59,6 +59,9 @@ function Game_State(Game, GameData, Logger) {
     let frustumSize = 3000;
     let aspect = Settings.screen.width / Settings.screen.height;
 
+    //fps
+    let delta = 0;
+
 
 
 
@@ -66,8 +69,6 @@ function Game_State(Game, GameData, Logger) {
 
 
     this.init = function(){
-        //first show the loading screen
-        console.log(GameData);
 
 
         //3d
@@ -93,8 +94,7 @@ function Game_State(Game, GameData, Logger) {
 
         //Systems.cameraSystem.setCamera(camera);
 
-        //Systems.cameraSystem.setPosition(-2000, 2000, -2000);
-        //Systems.cameraSystem.lookAt(new Vector3());
+
 
         scene = new THREE.Scene(camera);
 
@@ -102,7 +102,7 @@ function Game_State(Game, GameData, Logger) {
 
         //mouse
         rayCaster = new THREE.Raycaster();
-        mouse = new THREE.Vector2(-1000, -1000);
+        mouse = new THREE.Vector2(-1000, -1000); //this is to make sure its off screen since you can't get the current mouse position
         canvasBounds = document.getElementById('MainCanvas').getBoundingClientRect();
 
         //setup the scene
@@ -169,26 +169,32 @@ function Game_State(Game, GameData, Logger) {
 
         scene.add(new AxesHelper(50));
 
-
+/*
 
 
         let testNumber = 0;
 
         for(let x = 0; x < 3; x += 1){
-            for(let y = 0; y < 4; y += 1){
-                for(let z = 0; z < 5; z += 1){
+            for(let y = 0; y < 5; y += 1){
+                for(let z = 0; z < 2; z += 1){
 
-                    if(y === 0 || y === 1){
-                        building.setVoxel(x, y, z, 'n')
+                    if(y === 0 /!*|| y === 1*!/){
+                        building.setVoxel(x, y, z, voxels[2])
+                    }else if(x === 0 || z === 0){
+                        building.setVoxel(x, y, z, voxels[3])
                     }
 
                 }
             }
         }
 
+
+
         console.log(building.countVoxels());
 
-        let testFloor = building.getFloor(1);
+        let testFloor = building.getFloor(0);
+
+
 
 
 
@@ -199,13 +205,18 @@ function Game_State(Game, GameData, Logger) {
 
         building.generateFloorMesh(0, visual.get("floorZero"));
 
+        */
         cameraLoc = 200;
-
+        /*
         //camera.position.set(0, 50, 0);
         //camera.position.set(50, 50, 50);
         //camera.position.set(25, 5, 25);
+
+        */
         camera.position.set(cameraLoc, cameraLoc*1.5, cameraLoc);
         camera.lookAt(new Vector3(0, 0, 0));
+
+        /*
         //camera.position.set(500, 800, 500);
         //camera.lookAt(visual.get(floorZero).position.clone())
 
@@ -217,7 +228,7 @@ function Game_State(Game, GameData, Logger) {
 
 
 
-        console.log(renderer.info.render);
+        console.log(renderer.info.render);*/
 
     }; //end of init
 
@@ -234,10 +245,16 @@ function Game_State(Game, GameData, Logger) {
             visual.get("cube").position.x += 1;
         }
 
-        Input.clearKeys();
-    };
+        if(Input.isDown("KeyF")){
+            console.log(delta)
+        }
 
-    this.update = function () {
+        Input.clearKeys();
+    }
+
+    this.update = function (Delta) {
+        delta = Delta;
+        //console.log(Delta)
         //Game.stateManager.addState(new Game_State(Game));
 
         if(focus){
@@ -246,9 +263,9 @@ function Game_State(Game, GameData, Logger) {
             keypress()
         }
 
-        tempCamX += .51;
+        tempCamX += .25;
 
-        if(tempCamX > 500){
+        if(tempCamX > 50){
             tempCamX = 0;
         }
         //visual.get("floorZero").position.set(tempCamX, 0, 0)
@@ -301,6 +318,7 @@ function Game_State(Game, GameData, Logger) {
 
     this.render = function (Delta) {
         renderer.render(scene, camera);
+
     }
 
     this.dispose = function(){
@@ -308,7 +326,7 @@ function Game_State(Game, GameData, Logger) {
     };
 
     this.click = function(Event) {
-        console.log(Event.which)
+        //console.log(Event.which)
         Event.preventDefault();
 
 
@@ -328,7 +346,7 @@ function Game_State(Game, GameData, Logger) {
                 }
 
                 parent = parent.parent;
-                console.log('running')
+                //console.log('running')
 
 
             }
@@ -412,6 +430,11 @@ function CommandSystem(Systems, Logger) {
 
         }
     }
+}
+
+//fps
+function FPS() {
+
 }
 
 
