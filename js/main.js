@@ -22,10 +22,11 @@ document.addEventListener("DOMContentLoaded", function(){
     //testing
     let test = new Building(Voxels());
 
-    for(let x = 0; x < 10; x += 1){
-        for(let y = 0; y < 10; y += 1){
-            for(let z = 0; z < 10; z += 1){
-                if(y === 0){
+    for(let x = 0; x < 32; x += 1){
+        for(let y = 0; y < 32; y += 1){
+            for(let z = 0; z < 32; z += 1){
+                test.setVoxel(x,y,z,"0")
+                /*if(y === 0){
                     test.setVoxel(x, y, z, 2);
                 }
 
@@ -35,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
                 if(z === 0){
                     test.setVoxel(x, y, z, 2);
-                }
+                }*/
 
 
             }
@@ -43,9 +44,27 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 
     let chunk = test.getChunk(0,0,0);
-    console.log(chunk.count());
 
-    chunk.createMesh();
+    test.stats();
+
+
+
+    let count = 1;
+    let total = 0;
+    let start = 0;
+    for(let rep = 0; rep < 1; rep += 1, count *= 10){
+        for(let cu = 0; cu < count; cu += 1){
+            start = performance.now();
+            chunk.createMesh();
+            total += performance.now() - start
+
+
+        }
+
+        console.log(total)
+        console.log(total / count)
+    }
+
 
 
 });

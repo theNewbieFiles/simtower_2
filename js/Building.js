@@ -80,6 +80,17 @@ function Building(Blocks) {
     this.print = function () {
         console.log(chunks)
     };
+
+    this.stats = function () {
+        console.log("Chunks: " + chunks.size);
+        let count = 0;
+
+        chunks.forEach(Chunk => {
+            count += Chunk.voxels.size;
+        });
+
+        console.log("Voxels: " + count);
+    }
 }
 
 
@@ -103,6 +114,32 @@ function Chunk(X, Y, Z, Building) {
     this.building = Building;
 
     this.voxels = new Map();
+
+    //createmesh
+    this.cm_loc = null;
+    this.geometries = null;
+    this.locationMatrix = new Matrix4();
+
+    this.topGeometry = new PlaneBufferGeometry(10, 10);
+    this.topGeometry.rotateX(-Math.PI /2);
+    this.topGeometry.translate(5,10,5);
+
+    this.rightGeometry = new PlaneBufferGeometry(10, 10);
+    this.rightGeometry.rotateY(Math.PI /2);
+    this.rightGeometry.translate(10, 5, 5);
+
+    this.leftGeometry = new PlaneBufferGeometry(10, 10);
+    this.leftGeometry.rotateY(-Math.PI /2);
+    this.leftGeometry.translate(0, 5, 5);
+
+
+    this.forwardGeometry = new PlaneBufferGeometry(10, 10);
+    this.forwardGeometry.rotateY(Math.PI);
+    this.forwardGeometry.translate(5, 5, 0);
+
+    this.backwardGeometry = new PlaneBufferGeometry(10, 10);
+    //this.backwardGeometry.rotateY(Math.PI);
+    this.backwardGeometry.translate(5,5,10);
 
 
 
@@ -170,57 +207,33 @@ Chunk.prototype.getVoxel = function (X, Y, Z) {
 };
 
 Chunk.prototype.createMesh = function () {
-    let start = performance.now();
-    let loc = null;
-    let offset = {};
-
-    let geometries = [];
-
-    let locationMatrix = new Matrix4();
-
-    let topGeometry = new PlaneBufferGeometry(10, 10);
-    topGeometry.rotateX(-Math.PI /2);
-    topGeometry.translate(5,10,5);
-
-    let rightGeometry = new PlaneBufferGeometry(10, 10);
-    rightGeometry.rotateY(Math.PI /2);
-    rightGeometry.translate(10, 5, 5);
-
-    let leftGeometry = new PlaneBufferGeometry(10, 10);
-    leftGeometry.rotateY(-Math.PI /2);
-    leftGeometry.translate(0, 5, 5);
 
 
-    let forwardGeometry = new PlaneBufferGeometry(10, 10);
-    forwardGeometry.rotateY(Math.PI);
-    forwardGeometry.translate(5, 5, 0);
+    this.geometries = [];
 
-    let backwardGeometry = new PlaneBufferGeometry(10, 10);
-    //backwardGeometry.rotateY(Math.PI);
-    backwardGeometry.translate(5,5,10);
+
+
+
 
 
 
     this.voxels.forEach((Voxel, Location) => {
 
 
-        loc = this.getCoords(Location);
+        this.cm_loc = this.getCoords(Location);
 
-
-
-
-        locationMatrix.makeTranslation(
-            loc.x * 10,
-            loc.y * 10,
-            loc.z * 10
+        this.locationMatrix.makeTranslation(
+            this.cm_loc.x * 10,
+            this.cm_loc.y * 10,
+            this.cm_loc.z * 10
         );
 
 
 
 
         //check above
-        if(!this.voxels.get(loc.x + "," + (loc.y + 1)  + "," + loc.z)){
-            geometries.push(topGeometry.clone().applyMatrix4(locationMatrix));
+        if(!this.voxels.get(this.cm_loc.x + "," + (this.cm_loc.y + 1)  + "," + this.cm_loc.z)){
+            //this.geometries.push(this.topGeometry.clone().applyMatrix4(this.locationMatrix));
         }
 
         //not checking below cause it won't be seen
@@ -229,31 +242,30 @@ Chunk.prototype.createMesh = function () {
 
         }*/
 
-       /* //check right
-        if(!this.voxels.get((loc.x + 1) + "," + loc.y  + "," + loc.z)){
+        //check right
+        if(!this.voxels.get((this.cm_loc.x + 1) + "," + this.cm_loc.y  + "," + this.cm_loc.z)){
 
-            geometries.push(rightGeometry.clone().applyMatrix4(locationMatrix));
+           // this.geometries.push(this.rightGeometry.clone().applyMatrix4(this.locationMatrix));
         }
 
         //check left
-        if(!this.voxels.get((loc.x - 1) + "," + loc.y  + "," + loc.z)){
-            geometries.push(leftGeometry.clone().applyMatrix4(locationMatrix))
+        if(!this.voxels.get((this.cm_loc.x - 1) + "," + this.cm_loc.y  + "," + this.cm_loc.z)){
+            //this.geometries.push(this.leftGeometry.clone().applyMatrix4(this.locationMatrix))
         }
 
 
         //check forward
-        if(!this.voxels.get(loc.x + "," + loc.y  + "," + (loc.z - 1))){
-            geometries.push(forwardGeometry.clone().applyMatrix4(locationMatrix));
+        if(!this.voxels.get(this.cm_loc.x + "," + this.cm_loc.y  + "," + (this.cm_loc.z - 1))){
+            //this.geometries.push(this.forwardGeometry.clone().applyMatrix4(this.locationMatrix));
         }
 
         //check backwards
-        if(!this.voxels.get(loc.x + "," + loc.y  + "," + (loc.z + 1))){
-            geometries.push(backwardGeometry.clone().applyMatrix4(locationMatrix))
-        }*/
+        if(!this.voxels.get(this.cm_loc.x + "," + this.cm_loc.y  + "," + (this.cm_loc.z + 1))){
+            //this.geometries.push(this.backwardGeometry.clone().applyMatrix4(this.locationMatrix))
+        }
 
     });
 
-    console.log(performance.now() - start);
 };
 
 Chunk.prototype.getCoords = function (Location) {

@@ -6,6 +6,7 @@ import {StateManager} from "./stateManager";
 import {MainMenu_State} from "./mainMenu_State";
 
 import {Logger} from "./Logger";
+import Stats from "./threejs/stats.module";
 
 
 
@@ -32,6 +33,11 @@ function Game() {
     this.assets = {};
 
     let logger = new Logger();
+
+    let stats = new Stats();
+    stats.showPanel(0);
+    document.body.appendChild( stats.dom );
+
 
 
 
@@ -98,6 +104,7 @@ function Game() {
 
 
         if(!hardPause){
+            stats.begin();
             now = performance.now();
 
             delta = now - then;
@@ -109,6 +116,9 @@ function Game() {
             then = now;
 
 
+
+
+            stats.end();
         }
 
 

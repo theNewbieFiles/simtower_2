@@ -59,8 +59,10 @@ function Game_State(Game, GameData, Logger) {
     let frustumSize = 3000;
     let aspect = Settings.screen.width / Settings.screen.height;
 
-    //fps
-    let delta = 0;
+    //testing
+    let chunk;
+
+
 
 
 
@@ -169,43 +171,41 @@ function Game_State(Game, GameData, Logger) {
 
         scene.add(new AxesHelper(50));
 
-/*
+
 
 
         let testNumber = 0;
 
-        for(let x = 0; x < 3; x += 1){
-            for(let y = 0; y < 5; y += 1){
-                for(let z = 0; z < 2; z += 1){
+        for(let x = 0; x < 32; x += 1){
+            for(let y = 0; y < 32; y += 1){
+                for(let z = 0; z < 32; z += 1){
+                    building.setVoxel(x, y, z, 2);
 
-                    if(y === 0 /!*|| y === 1*!/){
-                        building.setVoxel(x, y, z, voxels[2])
-                    }else if(x === 0 || z === 0){
-                        building.setVoxel(x, y, z, voxels[3])
+                    /*if(y === 0){
+
                     }
+
+                    if(x === 0){
+                        building.setVoxel(x, y, z, 2);
+                    }
+
+                    if(z === 0){
+                        building.setVoxel(x, y, z, 2);
+                    }*/
 
                 }
             }
         }
 
+        building.stats();
 
-
-        console.log(building.countVoxels());
-
-        let testFloor = building.getFloor(0);
-
-
-
-
-
-        //building.print();
         let floorZero = entities.createEntity("floorZero");
 
         let testMesh = visual.create(floorZero);
 
-        building.generateFloorMesh(0, visual.get("floorZero"));
+        chunk = building.getChunk(0,0,0);
 
-        */
+
         cameraLoc = 200;
         /*
         //camera.position.set(0, 50, 0);
@@ -253,9 +253,7 @@ function Game_State(Game, GameData, Logger) {
     }
 
     this.update = function (Delta) {
-        delta = Delta;
-        //console.log(Delta)
-        //Game.stateManager.addState(new Game_State(Game));
+        chunk.createMesh();
 
         if(focus){
             focus();
