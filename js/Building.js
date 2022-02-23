@@ -19,6 +19,7 @@ function Building(Blocks) {
     const CHUNKSIZE = 32;
 
     this.setVoxel = function (X, Y, Z, Voxel) {
+
         //figure out what chunk you are in
         let x = Math.floor(X / CHUNKSIZE);
         let y = Math.floor(Y / CHUNKSIZE);
@@ -82,16 +83,24 @@ function Building(Blocks) {
     };
 
     this.stats = function () {
-        console.log("Chunks: " + chunks.size);
-        let count = 0;
+
+        let voxels = 0;
+        let subChunkCount = 0;
+        let values = null;
 
         chunks.forEach(Chunk => {
-            count += Chunk.voxels.size;
+            values = Chunk.stats();
+            subChunkCount += values.subChunks;
+            voxels += values.voxels;
         });
-
-        console.log("Voxels: " + count);
+        console.log("Chunks: " + chunks.size);
+        console.log("SubChunks: " + subChunkCount);
+        console.log("Voxels: " + voxels);
     }
 }
+
+
+
 
 
 
@@ -100,55 +109,68 @@ function Chunk(X, Y, Z, Building) {
     this.y = Y;
     this.z = Z;
 
-    //links;
-    this.XP = null; //x positive
-    this.XN = null; //x negative
-
-    this.YP = null; //y positive
-    this.YN = null; //y negative
-
-    this.ZP = null; //z positive
-    this.ZN = null; //z negative
-
+    this.subChunks = new Map();
 
     this.building = Building;
-
-    this.voxels = new Map();
-
-    //createmesh
-    this.cm_loc = null;
-    this.geometries = null;
-    this.locationMatrix = new Matrix4();
-
-    this.topGeometry = new PlaneBufferGeometry(10, 10);
-    this.topGeometry.rotateX(-Math.PI /2);
-    this.topGeometry.translate(5,10,5);
-
-    this.rightGeometry = new PlaneBufferGeometry(10, 10);
-    this.rightGeometry.rotateY(Math.PI /2);
-    this.rightGeometry.translate(10, 5, 5);
-
-    this.leftGeometry = new PlaneBufferGeometry(10, 10);
-    this.leftGeometry.rotateY(-Math.PI /2);
-    this.leftGeometry.translate(0, 5, 5);
-
-
-    this.forwardGeometry = new PlaneBufferGeometry(10, 10);
-    this.forwardGeometry.rotateY(Math.PI);
-    this.forwardGeometry.translate(5, 5, 0);
-
-    this.backwardGeometry = new PlaneBufferGeometry(10, 10);
-    //this.backwardGeometry.rotateY(Math.PI);
-    this.backwardGeometry.translate(5,5,10);
-
-
-
 }
 
-Chunk.prototype.count = function(){
-    return this.voxels.size
+/**
+ *
+ * @param Voxels (Array)
+ */
+Chunk.prototype.addVoxels = function(Voxels){
+
 };
 
+Chunk.prototype.setVoxel = function(X, Y, Z, Voxel){
+    debugger
+    //figure out what sub chunk you are in
+    let x = Math.floor(X / this.SUBCHUNKS_SIZE);
+    let y = Math.floor(Y / this.SUBCHUNKS_SIZE);
+    let z = Math.floor(Z / this.SUBCHUNKS_SIZE);
+
+    let location = x + "," + y + "," + z;
+    let subChunk = this.subChunks.get(location);
+
+
+    if(!subChunk){
+        //chunk doesn't exits
+        //create the chunk
+
+        subChunk = new Cell(x, y, z, this);
+        //chunk.init();
+        this.subChunks.set(location, subChunk);
+    }
+
+    subChunk.setVoxel(
+        X % this.SUBCHUNKS_SIZE,
+        Y % this.SUBCHUNKS_SIZE,
+        Z % this.SUBCHUNKS_SIZE,
+        Voxel
+    )
+};
+
+Chunk.prototype.getVoxel = function(){
+    //figure out what sub chunk you are in
+    let x = Math.floor(X / this.CHUNKS_SIZE);
+    let y = Math.floor(X / this.CHUNKS_SIZE);
+    let z = Math.floor(X / this.CHUNKS_SIZE);
+
+    let location = x + "," + y + "," + z;
+    let subChunk = this.subChunks.get(location);
+
+    if(!subChunk){
+        return null;
+    }
+
+    return subChunk.getVoxel(
+        X % this.CHUNKS_SIZE,
+        Y % this.CHUNKS_SIZE,
+        Z % this.CHUNKS_SIZE
+    );
+};
+
+//todo rewrite
 Chunk.prototype.init = function(){
     //todo: do I need to do this???
     //create the links
@@ -198,15 +220,176 @@ Chunk.prototype.init = function(){
 
 };
 
-Chunk.prototype.setVoxel = function (X, Y, Z, Voxel) {
-    this.voxels.set(X + "," + Y + "," + Z, Voxel);
+Chunk.prototype.print = function(){
+    this.subChunks.forEach((Value, Key) => {
+        Value.print();
+    })
 };
 
-Chunk.prototype.getVoxel = function (X, Y, Z) {
-    return this.voxels.get(X + "," + Y + "," + Z);
+Chunk.prototype.stats = function(){
+    let total = 0;
+
+    this.subChunks.forEach((Value, Key) => {
+
+        total += Value.count();
+
+    });
+
+    return {
+        voxels: total,
+        subChunks: this.subChunks.size
+    };
 };
 
-Chunk.prototype.createMesh = function () {
+Chunk.prototype.getSubChunk = function(X, Y, Z){
+    let location = X + "," + Y + "," + Z;
+    return this.subChunks.get(location);
+};
+
+Chunk.prototype.SUBCHUNKS_SIZE = 4;
+
+
+Chunk.prototype.CHUNKS_SIZE = 8;
+Chunk.prototype.CHUNKS_SIZE_SQ = 64;
+Chunk.prototype.CHUNKS_SIZE_CB = 512;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function Cell(X, Y, Z, OffsetX, OffsetY, OffsetZ, Parent) {
+    this.x = X;
+    this.y = Y;
+    this.z = Z;
+
+    //translate the local coords to world coords.
+    this.offsetX = OffsetX;
+    this.offsetY = OffsetY;
+    this.offsetZ = OffsetZ;
+
+    //does this subchunk need updating?
+    this.needsUpdating = false;
+
+    this.mesh = null;
+
+    this.parent = Parent;
+
+    this.voxels = []; //using an array
+
+    //createmesh
+    this.cm_loc = null;
+    this.geometries = null;
+    this.locationMatrix = new Matrix4();
+
+    this.topGeometry = new PlaneBufferGeometry(10, 10);
+    this.topGeometry.rotateX(-Math.PI /2);
+    this.topGeometry.translate(5,10,5);
+
+    this.rightGeometry = new PlaneBufferGeometry(10, 10);
+    this.rightGeometry.rotateY(Math.PI /2);
+    this.rightGeometry.translate(10, 5, 5);
+
+    this.leftGeometry = new PlaneBufferGeometry(10, 10);
+    this.leftGeometry.rotateY(-Math.PI /2);
+    this.leftGeometry.translate(0, 5, 5);
+
+
+    this.forwardGeometry = new PlaneBufferGeometry(10, 10);
+    this.forwardGeometry.rotateY(Math.PI);
+    this.forwardGeometry.translate(5, 5, 0);
+
+    this.backwardGeometry = new PlaneBufferGeometry(10, 10);
+    //this.backwardGeometry.rotateY(Math.PI);
+    this.backwardGeometry.translate(5,5,10);
+
+
+
+}
+
+Cell.prototype.count = function(){
+    return this.voxels.length;
+};
+
+Cell.prototype.init = function(){
+    //todo: do I need to do this???
+    //create the links
+
+    let xp = this.building.getChunk(this.x + 1, this.y, this.z);
+
+    if(xp){
+        this.XP = xp;
+        xp.XN = this;
+    }
+
+    let xn = this.building.getChunk(this.x - 1, this.y, this.z);
+
+    if(xn){
+        this.XN = xn;
+        xn.XP = this;
+    }
+
+
+    let yp = this.building.getChunk(this.x, this.y + 1, this.z);
+
+    if(yp){
+        this.YP = yp;
+        yp.YN = this;
+    }
+
+    let yn = this.building.getChunk(this.x, this.y - 1, this.z);
+
+    if(yn){
+        this.YN = yn;
+        yn.YP = this;
+    }
+
+    let zp = this.building.getChunk(this.x, this.y, this.z + 1);
+
+    if(zp){
+        this.ZP = zp;
+        zp.ZN = this;
+    }
+
+    let zn = this.building.getChunk(this.x, this.y, this.z - 1);
+    if(zn){
+        this.ZN = zn;
+        zn.ZP = this;
+    }
+
+
+};
+
+Cell.prototype.setVoxel = function (X, Y, Z, Voxel) {
+    this.voxels[X + (Z * this.CHUNKS_SIZE) + (Y * this.CHUNKS_SIZE_SQ)] = Voxel;
+    this.needsUpdating = true;
+
+    //this.voxels.set(X + "," + Y + "," + Z, Voxel);
+};
+
+Cell.prototype.getVoxel = function (X, Y, Z) {
+
+    return this.voxels[X + (Z * this.CHUNKS_SIZE) + (Y * this.CHUNKS_SIZE_SQ)];
+    //return this.voxels.get(X + "," + Y + "," + Z);
+};
+
+Cell.prototype.removeVoxel = function(X, Y, Z){
+    delete this.voxels[X + (Z * this.CHUNKS_SIZE) + (Y * this.CHUNKS_SIZE_SQ)];
+    this.needsUpdating = true;
+};
+
+Cell.prototype.createMesh = function () {
 
 
     this.geometries = [];
@@ -214,19 +397,18 @@ Chunk.prototype.createMesh = function () {
 
 
 
-
-
-
-    this.voxels.forEach((Voxel, Location) => {
-
-
-        this.cm_loc = this.getCoords(Location);
-
+    for (let index = 0; index < this.CHUNKS_SIZE_CB; index += 1){
         this.locationMatrix.makeTranslation(
             this.cm_loc.x * 10,
             this.cm_loc.y * 10,
             this.cm_loc.z * 10
         );
+    }
+
+    this.voxels.forEach((Voxel, Location) => {
+
+
+
 
 
 
@@ -245,7 +427,7 @@ Chunk.prototype.createMesh = function () {
         //check right
         if(!this.voxels.get((this.cm_loc.x + 1) + "," + this.cm_loc.y  + "," + this.cm_loc.z)){
 
-           // this.geometries.push(this.rightGeometry.clone().applyMatrix4(this.locationMatrix));
+            // this.geometries.push(this.rightGeometry.clone().applyMatrix4(this.locationMatrix));
         }
 
         //check left
@@ -264,11 +446,12 @@ Chunk.prototype.createMesh = function () {
             //this.geometries.push(this.backwardGeometry.clone().applyMatrix4(this.locationMatrix))
         }
 
+
     });
 
 };
 
-Chunk.prototype.getCoords = function (Location) {
+Cell.prototype.getCoords = function (Location) {
     Location = Location.split(",");
 
     return {
@@ -278,9 +461,17 @@ Chunk.prototype.getCoords = function (Location) {
     };
 };
 
+Cell.prototype.print = function(){
+    console.log(this.voxels);
+};
+
 //constants
-Chunk.prototype.CHUNKS_SIZE = 32;
-Chunk.prototype.MAX_CHUNK_SIZE = 32768;
+Cell.prototype.CHUNKS_SIZE = 4;
+Cell.prototype.CHUNKS_SIZE_SQ = 16;
+Cell.prototype.CHUNKS_SIZE_CB = 64;
+
+
+
 
 
 
@@ -501,4 +692,4 @@ Chunk.prototype.print = function () {
 */
 
 
-export {Building};
+export {Building, Cell};
